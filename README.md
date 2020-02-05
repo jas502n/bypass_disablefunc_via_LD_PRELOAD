@@ -16,6 +16,7 @@ bypass_disablefunc.php 为命令执行 webshell，提供三个 GET 参数：
 ```
 http://site.com/bypass_disablefunc.php?cmd=pwd&outpath=/tmp/xx&sopath=/var/www/bypass_disablefunc_x64.so
 ```
+![](./demo.png)
 
 <div align="center">
 <img src="https://github.com/yangyangwithgnu/bypass_disablefunc_via_LD_PRELOAD/blob/master/bruce_lee.jpg" alt=""/><br>
