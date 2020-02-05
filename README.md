@@ -1,5 +1,22 @@
 
 <h1 align="center">bypass disable_functions via LD_PRELOAD</h1>
+
+bypass_disablefunc_x64.so 为执行命令的共享对象，用命令:
+
+`gcc -shared -fPIC bypass_disablefunc.c -o bypass_disablefunc_x64.so` 
+
+将 bypass_disablefunc.c 编译而来。
+
+若目标为 x86 架构，需要加上 -m32 选项重新编译，bypass_disablefunc_x86.so。
+
+本项目中有三个关键文件，bypass_disablefunc.php、bypass_disablefunc_x64.so、bypass_disablefunc_x86.so。 
+
+bypass_disablefunc.php 为命令执行 webshell，提供三个 GET 参数：
+
+```
+http://site.com/bypass_disablefunc.php?cmd=pwd&outpath=/tmp/xx&sopath=/var/www/bypass_disablefunc_x64.so
+```
+
 <div align="center">
 <img src="https://github.com/yangyangwithgnu/bypass_disablefunc_via_LD_PRELOAD/blob/master/bruce_lee.jpg" alt=""/><br>
 </div>
@@ -51,16 +68,10 @@ GCC 有个 C 语言扩展修饰符 `__attribute__((constructor))`，可以让由
 
 此外，我通过 LD_PRELOAD 劫持了启动进程的行为，劫持后又启动了另外的新进程，若不在新进程启动前取消 LD_PRELOAD，则将陷入无限循环，所以必须得删除环境变量 LD_PRELOAD。最直观的做法是调用 `unsetenv("LD_PRELOAD")`，这在大部份 linux 发行套件上的确可行，但在 centos 上却无效，究其原因，centos 自己也 hook 了 unsetenv()，在其内部启动了其他进程，根本来不及删除 LD_PRELOAD 就又被劫持，导致无限循环。所以，我得找一种比 unsetenv() 更直接的删除环境变量的方式。是它，全局变量 `extern char** environ`！实际上，unsetenv() 就是对 environ 的简单封装实现的环境变量删除功能。
 
-本项目中有三个关键文件，bypass_disablefunc.php、bypass_disablefunc_x64.so、bypass_disablefunc_x86.so。 
 
-bypass_disablefunc.php 为命令执行 webshell，提供三个 GET 参数：
-```
-http://site.com/bypass_disablefunc.php?cmd=pwd&outpath=/tmp/xx&sopath=/var/www/bypass_disablefunc_x64.so
-```
 一是 cmd 参数，待执行的系统命令（如 pwd）；二是 outpath 参数，保存命令执行输出结果的文件路径（如 /tmp/xx），便于在页面上显示，另外该参数，你应注意 web 是否有读写权限、web 是否可跨目录访问、文件将被覆盖和删除等几点；三是 sopath 参数，指定劫持系统函数的共享对象的绝对路径（如 /var/www/bypass_disablefunc_x64.so），另外关于该参数，你应注意 web 是否可跨目录访问到它。此外，bypass_disablefunc.php 拼接命令和输出路径成为完整的命令行，所以你不用在 cmd 参数中重定向。
 
-bypass_disablefunc_x64.so 为执行命令的共享对象，用命令 `gcc -shared -fPIC bypass_disablefunc.c -o bypass_disablefunc_x64.so` 将 bypass_disablefunc.c 编译而来。
-若目标为 x86 架构，需要加上 -m32 选项重新编译，bypass_disablefunc_x86.so。
+
 
 想办法将 bypass_disablefunc.php 和 bypass_disablefunc_x64.so 传到目标，指定好三个 GET 参数后，bypass_disablefunc.php 即可突破 disable_functions。执行 `cat /proc/meminfo`：
 <div align="center">
