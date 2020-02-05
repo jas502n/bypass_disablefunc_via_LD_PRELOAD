@@ -1,3 +1,11 @@
+# 参考链接
+
+https://www.freebuf.com/articles/web/192052.html
+
+https://3nd.xyz/2019/11/06/Memo/bypass-disable-functions/
+
+https://forum.90sec.com/t/topic/391
+
 
 <h1 align="center">bypass disable_functions via LD_PRELOAD</h1>
 
